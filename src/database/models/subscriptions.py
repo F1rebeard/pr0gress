@@ -1,5 +1,4 @@
 import enum
-from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Enum, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -19,6 +18,7 @@ class SubscriptionStatus(str, enum.Enum):
     FROZEN = "Заморожена"
     EXPIRED = "Истекла"
     UNREGISTERED = "Оплата без регистрации"
+    BANNED = "Забанен"
 
 
 class Subscription(Base):

@@ -1,6 +1,5 @@
-from pydantic import BaseModel, PostgresDsn, field_validator
-
 from loguru import logger
+from pydantic import BaseModel, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

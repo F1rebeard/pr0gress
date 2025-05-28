@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 
 project_tree.txt
+.pre-commit-config.yaml
