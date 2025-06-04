@@ -12,9 +12,7 @@ class FreeTrialService:
         self.expiration_days = expiration_days
 
     async def get_or_create_trial_for_user(self, telegram_id: int) -> FreeTrial:
-        """
-        Creates a new trial for the user if it doesn't exist already.
-        """
+        """Creates a new trial for the user if it doesn't exist already."""
         trial = await FreeTrialDAO.get_by_id(self.session, telegram_id)
         if trial:
             return trial
@@ -35,7 +33,8 @@ class FreeTrialService:
         return True
 
     async def get_trial_workouts(self):
-        """
-        Get all trial workouts from the database.
-        """
+        """Get all trial workouts from the database."""
         return await TrialWorkoutDAO.get_ordered_workouts(self.session)
+
+    async def get_trial_workout_by_position(self, position: int):
+        return await TrialWorkoutDAO.find_one_by_kwargs(self.session, position=position)

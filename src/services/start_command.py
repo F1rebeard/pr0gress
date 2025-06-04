@@ -1,5 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.bot.keyboards.subscription import (
     renew_or_change_subscription_kb,
@@ -9,45 +10,58 @@ from src.bot.keyboards.subscription import (
     unfreeze_subscription_kb,
 )
 from src.bot.keyboards.utils import create_inline_keyboard
-from src.domain.user.context import UserContext
+from src.domain.user.models import UserStatus
 from src.services.free_trial import FreeTrialService
 from src.services.main_menu import MainMenuService
 
 
 class StartCommandService:
-    def __init__(self, session):
+    def __init__(self, session: AsyncSession, telegram_id: int):
         self.session = session
+        self.telegram_id = telegram_id
 
-    async def get_start_message(self, ctx: UserContext) -> tuple[str, InlineKeyboardMarkup | None]:
-        if ctx.is_new_user:
+    async def get_start_message(self, status: UserStatus) -> tuple[str, InlineKeyboardMarkup | None]:
+        if status.is_new_user:
             return (
                 '🔥 Привет!\nДобро пожаловать в <b>Прогресс</b>!\n\n'
                 'Можешь взять пробную неделю и попробовать наши тренировки, '
                 'а можешь сразу выбрать подходящую подписку‍.',
                 subs_or_trial_kb
             )
-        if ctx.needs_registration:
+        if status.needs_registration:
             return (
                 '🏋️‍♂️ Почти готово!\nПодписка <b>оплачена</b>.\n'
                 '📝 Остался последний шаг – заполни данные, и начни тренировки!',
                 to_registration_btn
             )
-        if ctx.is_frozen:
+        if status.is_frozen:
             return (
                 '❄️ <b>Подписка заморожена</b>\n\n'
                 'Мы скучаем по твоим рекордам, а штанга застоялась…\n'
                 '👉 <b>Разморозь подписку</b> и возвращайся в игру! 🏋️‍♀️',
                 unfreeze_subscription_kb
             )
-        if ctx.is_expired:
+        if status.is_expired:
             return (
                 'Твоя подписка <b>закончилась 😢</b>.\n'
                 '🔥 Но ты можешь вернуться в Прогресс прямо сейчас!\n'
                 '📌 Обнови подписку и продолжай тренироваться с нами!\n',
                 renew_or_change_subscription_kb
             )
-        if ctx.is_active:
-            return await MainMenuService(self.session).get_main_menu_text_and_markup(ctx.telegram_id)
+        if status.is_active:
+            return await MainMenuService(self.session).get_main_menu_text_and_markup(self.telegram_id)
+        if status.is_trial:
+            return(
+                '🏋️ У тебя активна пробная неделя!\n'
+                'Жми кнопку ниже, чтобы продолжить тренировки.',
+                subs_or_trial_kb
+            )
+        if status.had_trial_but_not_active:
+            return (
+                "🧪 Ты уже использовал пробную неделю.\n"
+                "Оформи подписку и продолжай тренироваться вместе с нами!",
+                subs_kb
+            )
 
         logger.error("❗ Unknown user state encountered")
         return "❗Что-то пошло не так. Попробуйте позже.", None

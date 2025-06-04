@@ -4,9 +4,10 @@ from contextlib import asynccontextmanager
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram_dialog import setup_dialogs
 from loguru import logger
 
-from src.bot.handlers.free_trial import free_trial_router
+from src.bot.handlers.free_trial import free_trial_dialog, free_trial_router
 from src.bot.handlers.starting import starting_router
 from src.config import settings
 from src.database import db
@@ -38,8 +39,11 @@ async def app_lifecycle():
 async def main():
     async with app_lifecycle() as app:
         bot = app["bot"]
+        setup_dialogs(dp)
+
         dp.include_router(starting_router)
         dp.include_router(free_trial_router)
+        dp.include_router(free_trial_dialog)
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

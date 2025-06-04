@@ -1,4 +1,5 @@
 from datetime import date
+from enum import Enum
 
 from sqlalchemy import BigInteger, Date, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -19,3 +20,9 @@ class TrialWorkout(Base):
     workout_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     position: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class TrialStatus(str, Enum):
+    NOT_USED = "NOT_USED"
+    ACTIVE = "ACTIVE"
+    EXPIRED = "EXPIRED"
