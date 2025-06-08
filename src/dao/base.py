@@ -1,4 +1,4 @@
-from typing import Generic, Sequence, Type, TypeVar
+from typing import Generic, Sequence, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel
@@ -12,10 +12,11 @@ T = TypeVar("T", bound=Base)
 
 
 class BaseDAO(Generic[T]):
-    model = Type[T]
+    model: type[T]
 
     def __init_subclass__(cls, **kwargs):
-        if not hasattr(cls, "model"):
+        super().__init_subclass__(**kwargs)
+        if "model" not in cls.__dict__:
             raise NotImplementedError(f"{cls.__name__} must define a 'model' class attribute")
 
     @classmethod
